@@ -117,9 +117,9 @@ class Client():
 
         self.periodic_running = True
         send(0)
-        kwargs = {'is_restrict': True, 'event': cancel_event}
+        #kwargs = {'is_restrict': True, 'event': cancel_event}
         self.start_working_threads(self.send_msg, self.recv_msg, cancel_event,
-                                   self.sockfd, **kwargs)
+                                   self.sockfd, {'is_restrict': True, 'event': cancel_event})
 
     def chat_symmetric(self):
         """
