@@ -17,6 +17,25 @@ def enable_logging():
 
 
 stun_servers_list = (
+    "stun1.l.google.com:19302",
+    "stun2.l.google.com:19302",
+    "stun3.l.google.com:19302",
+    "stun4.l.google.com:19302",
+    "23.21.150.121",
+    "stun01.sipphone.com",
+    "stun.ekiga.net",
+    "stun.fwdnet.net",
+    "stun.ideasip.com",
+    "stun.iptel.org",
+    "stun.rixtelecom.se",
+    "stun.schlund.de",
+    "stunserver.org",
+    "stun.softjoys.com",
+    "stun.voiparound.com",
+    "stun.voipbuster.com",
+    "stun.voipstunt.com",
+    "stun.voxgratia.org",
+    "stun.xten.com",
     "stun.ekiga.net",
     'stunserver.org',
     'stun.ideasip.com',
@@ -135,9 +154,9 @@ def stun_test(sock, host, port, source_ip, source_port, send_data=""):
                 else:
                     retVal['Resp'] = False
                     return retVal
-        msgtype = binascii.b2a_hex(buf[0:2])
+        msgtype = binascii.b2a_hex(buf[0:2]).decode()
         bind_resp_msg = dictValToMsgType[msgtype] == "BindResponseMsg"
-        tranid_match = tranid.upper() == binascii.b2a_hex(buf[4:20]).upper()
+        tranid_match = tranid.upper() == binascii.b2a_hex(buf[4:20]).upper().decode()
         if bind_resp_msg and tranid_match:
             recvCorr = True
             retVal['Resp'] = True
@@ -145,7 +164,7 @@ def stun_test(sock, host, port, source_ip, source_port, send_data=""):
             len_remain = len_message
             base = 20
             while len_remain:
-                attr_type = binascii.b2a_hex(buf[base:(base + 2)])
+                attr_type = binascii.b2a_hex(buf[base:(base + 2)]).decode()
                 attr_len = int(binascii.b2a_hex(buf[(base + 2):(base + 4)]),
                                16)
                 if attr_type == MappedAddress:  # first two bytes: 0x0001
@@ -266,6 +285,7 @@ def get_ip_info(source_ip="0.0.0.0", source_port=54320, stun_host=None,
 
 
 def main():
+    #enable_logging()
     nat_type, external_ip, external_port = get_ip_info()
     print("NAT Type:", nat_type)
     print("External IP:", external_ip)
