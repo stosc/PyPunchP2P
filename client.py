@@ -46,12 +46,13 @@ class Client():
 
     def request_for_connection(self, nat_type_id=0):
         self.sockfd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sockfd.sendto(self.pool + ' {0}'.format(nat_type_id), self.master)
-        data, addr = self.sockfd.recvfrom(len(self.pool) + 3)
-        if data != "ok " + self.pool:
+        self.sockfd.sendto(str.encode(
+            self.pool + ' {0}'.format(nat_type_id)), self.master)
+        data, addr = self.sockfd.recvfrom(len(self.pool) + 300)
+        if data.decode() != "ok " + self.pool:
             print(sys.stderr, "unable to request!")
             sys.exit(1)
-        self.sockfd.sendto("ok", self.master)
+        self.sockfd.sendto(str.encode("ok"), self.master)
         sys.stderr = sys.stdout
         print(sys.stderr,
               "request sent, waiting for partner in pool '%s'..." % self.pool)

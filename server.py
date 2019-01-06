@@ -5,6 +5,7 @@ import socket
 import struct
 import sys
 from collections import namedtuple
+import logging
 
 FullCone = "Full Cone"  # 0
 RestrictNAT = "Restrict NAT"  # 1
@@ -54,7 +55,7 @@ def main():
     ClientInfo = namedtuple("ClientInfo", "addr, nat_type_id")
     while True:
         data, addr = sockfd.recvfrom(1024)
-        if data.startswith("msg "):
+        if data.decode().startswith("msg "):
             # forward symmetric chat msg, act as TURN server
             try:
                 sockfd.sendto(data[4:], symmetric_chat_clients[addr])
@@ -67,11 +68,16 @@ def main():
             # help build connection between clients, act as STUN server
             print("connection from %s:%d" % addr)
             pool, nat_type_id = data.strip().split()
-            sockfd.sendto("ok {0}".format(pool), addr)
+            sendmsg = str.encode("ok %s" % (pool.decode()))
+            logging.debug(sendmsg)
+            print(sendmsg)
+            sockfd.sendto(sendmsg, addr)
             print("pool={0}, nat_type={1}, ok sent to client".format(
                 pool, NATTYPE[int(nat_type_id)]))
-            data, addr = sockfd.recvfrom(2)
-            if data != "ok":
+            data, addr = sockfd.recvfrom(1024)
+            logging.debug(data)
+            print(data)
+            if data.decode() != "ok":
                 continue
 
             print("request received for pool:", pool)
@@ -107,4 +113,14 @@ if __name__ == "__main__":
         exit(0)
     else:
         assert sys.argv[1].isdigit(), "port should be a number!"
-        main()
+        logging.basicConfig(level=logging.DEBUG,  # 控制台打印的日志级别
+                            filename='error.log',
+                            filemode='a',  # 模式，有w和a，w就是写模式，每次都会重新写日志，覆盖之前的日志
+                            # a是追加模式，默认如果不写的话，就是追加模式
+                            format='%(asctime)s - %(pathname)s[line:%(lineno)d] - %(levelname)s: %(message)s'
+                            # 日志格式
+                            )
+        try:
+            main()
+        except Exception as e:
+            logging.exception(e)
