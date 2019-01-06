@@ -58,11 +58,13 @@ def main():
         if data.decode().startswith("msg "):
             # forward symmetric chat msg, act as TURN server
             try:
+                logging.debug(symmetric_chat_clients)
                 sockfd.sendto(data[4:], symmetric_chat_clients[addr])
                 print("msg successfully forwarded to {0}".format(
                     symmetric_chat_clients[addr]))
                 print(data[4:])
-            except KeyError:
+            except KeyError as e:
+                logging.exception(e)
                 print("something is wrong with symmetric_chat_clients!")
         else:
             # help build connection between clients, act as STUN server
