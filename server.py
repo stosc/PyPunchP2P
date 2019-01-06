@@ -10,8 +10,9 @@ FullCone = "Full Cone"  # 0
 RestrictNAT = "Restrict NAT"  # 1
 RestrictPortNAT = "Restrict Port NAT"  # 2
 SymmetricNAT = "Symmetric NAT"  # 3
-UnknownNAT = "Unknown NAT" # 4
+UnknownNAT = "Unknown NAT"  # 4
 NATTYPE = (FullCone, RestrictNAT, RestrictPortNAT, SymmetricNAT, UnknownNAT)
+
 
 def addr2bytes(addr, nat_type_id):
     """Convert an address pair to a hash."""
@@ -43,7 +44,7 @@ def main():
 
     sockfd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sockfd.bind(("", port))
-    print "listening on *:%d (udp)" % port
+    print("listening on *:%d (udp)" % port)
 
     poolqueue = {}
     # A,B with addr_A,addr_B,pool=100
@@ -57,28 +58,30 @@ def main():
             # forward symmetric chat msg, act as TURN server
             try:
                 sockfd.sendto(data[4:], symmetric_chat_clients[addr])
-                print("msg successfully forwarded to {0}".format(symmetric_chat_clients[addr]))
+                print("msg successfully forwarded to {0}".format(
+                    symmetric_chat_clients[addr]))
                 print(data[4:])
             except KeyError:
                 print("something is wrong with symmetric_chat_clients!")
         else:
             # help build connection between clients, act as STUN server
-            print "connection from %s:%d" % addr
+            print("connection from %s:%d" % addr)
             pool, nat_type_id = data.strip().split()
             sockfd.sendto("ok {0}".format(pool), addr)
-            print("pool={0}, nat_type={1}, ok sent to client".format(pool, NATTYPE[int(nat_type_id)]))
+            print("pool={0}, nat_type={1}, ok sent to client".format(
+                pool, NATTYPE[int(nat_type_id)]))
             data, addr = sockfd.recvfrom(2)
             if data != "ok":
                 continue
 
-            print "request received for pool:", pool
+            print("request received for pool:", pool)
 
             try:
                 a, b = poolqueue[pool].addr, addr
                 nat_type_id_a, nat_type_id_b = poolqueue[pool].nat_type_id, nat_type_id
                 sockfd.sendto(addr2bytes(a, nat_type_id_a), b)
                 sockfd.sendto(addr2bytes(b, nat_type_id_b), a)
-                print "linked", pool
+                print("linked", pool)
                 del poolqueue[pool]
             except KeyError:
                 poolqueue[pool] = ClientInfo(addr, nat_type_id)
@@ -92,7 +95,8 @@ def main():
                     print("Hurray! symmetric chat link established.")
                     del symmetric_chat_clients[pool]
                 else:
-                    del symmetric_chat_clients[pool]  # neither clients are symmetric NAT
+                    # neither clients are symmetric NAT
+                    del symmetric_chat_clients[pool]
             else:
                 symmetric_chat_clients[pool] = (nat_type_id, addr)
 
