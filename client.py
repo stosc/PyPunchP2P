@@ -77,19 +77,19 @@ class Client():
                 if addr == self.target or addr == self.master:
                     sys.stdout.write(data)
                     if data == "punching...\n":
-                        sock.sendto("end punching\n", addr)
+                        sock.sendto(str.encode("end punching\n"), addr)
         else:
             while True:
                 data, addr = sock.recvfrom(1024)
                 if addr == self.target or addr == self.master:
                     sys.stdout.write(data)
                     if data == "punching...\n":  # peer是restrict
-                        sock.sendto("end punching", addr)
+                        sock.sendto(str.encode("end punching"), addr)
 
     def send_msg(self, sock):
         while True:
             data = sys.stdin.readline()
-            sock.sendto(data, self.target)
+            sock.sendto(str.encode(data), self.target)
 
     @staticmethod
     def start_working_threads(send, recv, event=None, *args, **kwargs):
@@ -111,7 +111,7 @@ class Client():
         cancel_event = Event()
 
         def send(count):
-            self.sockfd.sendto('punching...\n', self.target)
+            self.sockfd.sendto(str.encode('punching...\n'), self.target)
             print("UDP punching package {0} sent".format(count))
             if self.periodic_running:
                 Timer(0.5, send, args=(count + 1, )).start()
@@ -130,7 +130,7 @@ class Client():
         def send_msg_symm(sock):
             while True:
                 data = 'msg ' + sys.stdin.readline()
-                sock.sendto(data, self.master)
+                sock.sendto(str.encode(data), self.master)
 
         def recv_msg_symm(sock):
             while True:
